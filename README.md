@@ -1,4 +1,4 @@
-# CSCI_6235_Web-Scrapper
+# Web-Scrapper
 
 This tool is a component-based enterprise web application designed to scrape metadata from GitHub repositories (specifically targeting C/C++ projects), categorize them, and provide dependency visualization.
 
