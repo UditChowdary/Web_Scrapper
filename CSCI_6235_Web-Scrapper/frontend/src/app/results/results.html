@@ -1,0 +1,100 @@
+<div class="results-container">
+  <div>
+    <a routerLink="/" class="title-link">
+      <h1 class="title">Git Scrapper</h1>
+    </a>
+  </div>
+  <div class="header">
+    <div class="search-container">
+      <input type="text" placeholder="Search repositories..." [(ngModel)]="keyword" (ngModelChange)="onKeywordChange()" [disabled]="isLoading">
+      <button (click)="search()" [disabled]="isGoButtonDisabled || isLoading">
+        <i class="material-icons">search</i>
+      </button>
+      <div *ngIf="isLoading && (!paginator || paginator.pageIndex === 0)" class="spinner-container-search">
+        <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-controls">
+    <div class="sort-bar" cdkDropList cdkDropListOrientation="horizontal" (cdkDropListDropped)="dropSort($event)" *ngIf="sorts.length > 0">
+      <span>Sorted by:</span>
+      <span *ngFor="let sort of sorts" class="sort-pill" cdkDrag>
+        {{ sort.column }} ({{ sort.direction }})
+        <button (click)="removeSort(sort.column)">x</button>
+      </span>
+    </div>
+    <div class="rows-per-page">
+      <label for="pageSize">Rows per page:</label>
+      <input id="pageSize" type="number" [(ngModel)]="currentPerPageInput" (change)="setPageSize(currentPerPageInput)">
+    </div>
+  </div>
+
+  <div class="table-container">
+    <div *ngIf="isLoading" class="table-overlay">
+      <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th class="name-col sortable" (click)="applySort('full_name')">
+            <div>
+              Name
+              <span *ngIf="getSortForColumn('full_name') as sort">
+                <sup>{{ sorts.indexOf(sort) + 1 }}</sup>
+                {{ sort.direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </div>
+          </th>
+          <th class="desc-col">Description</th>
+          <th class="center-col sortable" *ngFor="let category of categories" (click)="applySort(category)">
+            <div>
+              {{ category }}
+              <span *ngIf="getSortForColumn(category) as sort">
+                <sup>{{ sorts.indexOf(sort) + 1 }}</sup>
+                {{ sort.direction === 'asc' ? '▲' : '▼' }}
+              </span>
+            </div>
+          </th>
+          <th class="center-col">Dependency Chain</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let repo of repos">
+          <td class="name-col"><a href="{{ repo.html_url }}" target="_blank">{{ repo.full_name }}</a></td>
+          <td class="desc-col">{{ repo.description || 'N/A' }}</td>
+          <td class="center-col" *ngFor="let category of categories">{{ repo.categories[category] ?? 'N/A' }}</td>
+          <td class="center-col">
+            <mat-progress-spinner *ngIf="isFetchingDependencies[repo.full_name]" mode="indeterminate" diameter="20"></mat-progress-spinner>
+            <ng-container *ngIf="!isFetchingDependencies[repo.full_name]">
+              <ng-container *ngIf="resultsState.getDependency(repo.full_name); else fetchButton">
+                <ng-container *ngIf="getRelationsForRepo(repo) && getRelationsForRepo(repo).length > 0; else noRelations">
+                  <a (click)="viewDependencies(repo)" style="cursor: pointer; text-decoration: underline;">View</a>
+                </ng-container>
+                <ng-template #noRelations>
+                  None
+                </ng-template>
+              </ng-container>
+              <ng-template #fetchButton>
+                <a (click)="fetchDependencies(repo)" style="cursor: pointer; text-decoration: underline;">Fetch</a>
+              </ng-template>
+            </ng-container>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p *ngIf="totalCount === 0 && !isLoading">No repositories found.</p>
+  <p *ngIf="isLastPage && !isLoading">Reached end of repositories.</p>
+
+  <mat-paginator
+    *ngIf="totalCount > perPage"
+    [length]="totalCount"
+    [pageSize]="perPage"
+    [pageIndex]="page - 1"
+    [hidePageSize]="true"
+    [showFirstLastButtons]="false"
+    (page)="onPageChange($event)">
+  </mat-paginator>
+</div>

@@ -1,0 +1,15 @@
+<div class="landing-container">
+  <div class="title-container">
+    <h1>Git Scrapper</h1>
+  </div>
+  <div class="search-container">
+    <input type="text" placeholder="Search repositories..." [(ngModel)]="keyword" (ngModelChange)="onKeywordChange()" [disabled]="isLoading">
+    <button (click)="search()" [disabled]="isGoButtonDisabled || isLoading">
+      <i class="material-icons">search</i>
+    </button>
+    <div *ngIf="isLoading" class="spinner-container">
+      <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+    </div>
+  </div>
+  <div *ngIf="keywordError" class="error-message">{{ keywordError }}</div>
+</div>
