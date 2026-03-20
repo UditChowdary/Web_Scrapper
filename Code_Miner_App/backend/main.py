@@ -1,5 +1,6 @@
 import os
 import sys
+import asyncio
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
@@ -73,8 +74,21 @@ async def dependency_metadata(owner: str, repo: str):
     try:
         repo_full_name = f"{owner}/{repo}"
         # await check_repo_language(repo_full_name) # Temporarily disabled for testing
-        chain = await get_dependency_tree_with_metadata(repo_full_name)
-        return chain
+        try:
+            # Large repositories can take a long time for metadata/transitive analysis.
+            return await asyncio.wait_for(get_dependency_tree_with_metadata(repo_full_name), timeout=15)
+        except asyncio.TimeoutError:
+            # Fallback to basic dependency view so UI does not hang forever.
+            try:
+                basic_chain = await asyncio.wait_for(get_dependency_tree(repo_full_name), timeout=8)
+                basic_chain["note"] = "Metadata timed out; showing basic dependency graph."
+                return basic_chain
+            except asyncio.TimeoutError:
+                return {
+                    "full_name": repo_full_name,
+                    "relations": [],
+                    "note": "Dependency request timed out. Try a smaller repository or retry later."
+                }
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An unexpected error occurred: {str(e)}")
 

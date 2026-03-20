@@ -9,13 +9,18 @@ import json
 
 GITHUB_API_REST = "https://api.github.com"
 TOKEN = os.getenv("GITHUB_TOKEN")
-if not TOKEN:
-    raise RuntimeError("GITHUB_TOKEN not set. Put it in .env.")
 
-HEADERS = {
-    "Authorization": f"Bearer {TOKEN}",
+BASE_HEADERS = {
     "User-Agent": "CoursePrototype-API-Feasibility/1.0",
 }
+
+def _auth_headers(extra: Optional[Dict[str, str]] = None) -> Dict[str, str]:
+    headers = dict(BASE_HEADERS)
+    if TOKEN:
+        headers["Authorization"] = f"Bearer {TOKEN}"
+    if extra:
+        headers.update(extra)
+    return headers
 
 class RateLimited(Exception):
     """Custom exception raised when GitHub rate limits or blocks a request."""
@@ -52,7 +57,7 @@ def build_query(keywords: List[str], license_key: Optional[str]) -> str:
        stop=stop_after_attempt(5))
 async def _search_page(client: httpx.AsyncClient, q: str, per_page: int, page: int):
     r = await client.get(f"{GITHUB_API_REST}/search/repositories",
-                   headers={**HEADERS, "Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"},
+           headers=_auth_headers({"Accept": "application/vnd.github+json", "X-GitHub-Api-Version": "2022-11-28"}),
                    params={"q": q, "sort": "updated", "order": "desc",
                            "per_page": per_page, "page": page},
                    timeout=30)
@@ -70,7 +75,7 @@ async def _get_file_content(client: httpx.AsyncClient, repo_full_name: str, file
     """Fetches the content of a file from a repository."""
     try:
         url = f"{GITHUB_API_REST}/repos/{repo_full_name}/contents/{file_path}"
-        r = await client.get(url, headers=HEADERS, timeout=30)
+        r = await client.get(url, headers=_auth_headers(), timeout=30)
         _maybe_rate_limit(r)
         r.raise_for_status()
         data = r.json()
@@ -88,7 +93,7 @@ async def get_repo_details(client: httpx.AsyncClient, repo_full_name: str) -> Op
     """Fetches details for a single repository."""
     try:
         url = f"{GITHUB_API_REST}/repos/{repo_full_name}"
-        r = await client.get(url, headers=HEADERS, timeout=30)
+        r = await client.get(url, headers=_auth_headers(), timeout=30)
         _maybe_rate_limit(r)
         r.raise_for_status()
         data = r.json()
@@ -166,7 +171,7 @@ async def _get_direct_dependencies(client: httpx.AsyncClient, repo_full_name: st
     dependencies = {"npm": [], "pip": [], "cmake": [], "conan": [], "vcpkg": [], "submodule": []}
     try:
         url = f"{GITHUB_API_REST}/repos/{repo_full_name}/git/trees/main?recursive=1"
-        r = await client.get(url, headers=HEADERS, timeout=30)
+        r = await client.get(url, headers=_auth_headers(), timeout=30)
         _maybe_rate_limit(r)
         r.raise_for_status()
         tree = r.json()["tree"]

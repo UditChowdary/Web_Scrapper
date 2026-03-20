@@ -8,6 +8,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { HttpClient } from '@angular/common/http';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { DependencyMetadata } from '../dependency-metadata/dependency-metadata';
+import { catchError, of, timeout } from 'rxjs';
 
 @Component({
   selector: 'app-dependency',
@@ -51,9 +52,15 @@ export class Dependency implements OnInit {
     }
 
     this.http.get(`/api/dependency-metadata/${this.repoFullName}`)
+      .pipe(
+        timeout(50000),
+        catchError(() => of({ relations: [] }))
+      )
       .subscribe({
         next: (data: any) => {
-          sessionStorage.setItem(cacheKey, JSON.stringify(data));
+          if (data?.relations?.length) {
+            sessionStorage.setItem(cacheKey, JSON.stringify(data));
+          }
           this.dependencies = data.relations;
           if (this.dependencies && this.dependencies.length > 0) {
             this.buildGraph();

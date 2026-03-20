@@ -1,15 +1,28 @@
 <div class="landing-container">
-  <div class="title-container">
-    <h1>Code Miner</h1>
-  </div>
-  <div class="search-container">
-    <input type="text" placeholder="Search repositories..." [(ngModel)]="keyword" (ngModelChange)="onKeywordChange()" [disabled]="isLoading">
-    <button (click)="search()" [disabled]="isGoButtonDisabled || isLoading">
-      <i class="material-icons">search</i>
-    </button>
-    <div *ngIf="isLoading" class="spinner-container">
-      <mat-progress-spinner mode="indeterminate" diameter="35"></mat-progress-spinner>
+  <div class="landing-card">
+    <div class="title-container">
+      <span class="title-badge">Repository Discovery</span>
+      <h1>Code Miner</h1>
+      <p>Find and explore C/C++ repositories with dependency insights.</p>
+    </div>
+
+    <div class="search-container">
+      <input type="text" placeholder="Search repositories..." [(ngModel)]="keyword" (ngModelChange)="onKeywordChange()" [disabled]="isLoading">
+      <button (click)="search()" [disabled]="isGoButtonDisabled || isLoading" aria-label="Search repositories">
+        <i class="material-icons">search</i>
+      </button>
+      <div *ngIf="isLoading" class="spinner-container">
+        <mat-progress-spinner mode="indeterminate" diameter="28"></mat-progress-spinner>
+      </div>
+    </div>
+
+    <div *ngIf="keywordError" class="error-message">{{ keywordError }}</div>
+
+    <div class="hint-row">
+      <span class="hint-chip">Examples: compiler</span>
+      <span class="hint-chip">game engine</span>
+      <span class="hint-chip">networking</span>
+      <span class="hint-chip">embedded</span>
     </div>
   </div>
-  <div *ngIf="keywordError" class="error-message">{{ keywordError }}</div>
 </div>

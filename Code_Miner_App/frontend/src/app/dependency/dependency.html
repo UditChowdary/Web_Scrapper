@@ -1,18 +1,31 @@
 <div class="dependency-container">
   <div class="header">
-    <button class="back-button" (click)="goBack()">
+    <button class="back-button" (click)="goBack()" aria-label="Go back">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <h1>Dependency Chain for {{ repoFullName }}</h1>
+    <div class="title-block">
+      <span class="title-badge">Dependency View</span>
+      <h1>Dependency Chain for {{ repoFullName }}</h1>
+      <p class="subtitle">Interactive graph of direct and summarized transitive dependencies.</p>
+    </div>
   </div>
+
   <div *ngIf="isLoading" class="spinner-container">
     <mat-progress-spinner mode="indeterminate"></mat-progress-spinner>
   </div>
+
   <div *ngIf="!isLoading">
     <div *ngIf="!dependencies || dependencies.length === 0" class="no-dependencies">
       Unable to retrieve dependency list.
     </div>
+
     <div *ngIf="dependencies && dependencies.length > 0" class="graph-container">
+      <div class="graph-stats">
+        <span class="stat-chip">Nodes: {{ nodes.length }}</span>
+        <span class="stat-chip">Links: {{ links.length }}</span>
+        <span class="stat-chip">Layout: Left to Right</span>
+      </div>
+      <div class="graph-tip">Tip: click a dependency node to view metadata.</div>
       <ngx-graph
         [nodes]="nodes"
         [links]="links"
@@ -21,7 +34,7 @@
       >
         <ng-template #nodeTemplate let-node>
           <svg:g class="node" (click)="onNodeClick(node)" style="cursor: pointer;">
-            <svg:rect [attr.width]="node.dimension.width" [attr.height]="node.dimension.height" [attr.fill]="'#007bff'" [attr.stroke]="'#0056b3'" [attr.rx]="3" [attr.ry]="3"/>
+            <svg:rect [attr.width]="node.dimension.width" [attr.height]="node.dimension.height" [attr.fill]="'#2f5d88'" [attr.stroke]="'#264b6e'" [attr.rx]="7" [attr.ry]="7"/>
             <svg:text alignment-baseline="central" [attr.x]="node.dimension.width / 2" [attr.y]="node.dimension.height / 2" [attr.fill]="'white'" text-anchor="middle">
               {{ node.label }}
             </svg:text>
