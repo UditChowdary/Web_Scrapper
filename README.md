@@ -1,4 +1,4 @@
-# Web-Scrapper
+# Code Miner
 
 This tool is a component-based enterprise web application designed to scrape metadata from GitHub repositories (specifically targeting C/C++ projects), categorize them, and provide dependency visualization.
 
@@ -30,8 +30,8 @@ This guide assumes you have Python 3.10+ and Node.js (LTS) installed on your sys
 
 ### 1. Clone the Repository
 ```
-git clone https://github.com/MadanKumar995/CSCI_6235_Web-Scrapper.git
-cd CSCI_6235_Web-Scrapper
+git clone <your-repository-url>
+cd Code_Miner/Code_Miner_App
 ```
 ### 2. Backend Setup (Python)
 Navigate to the backend directory, set up the virtual environment, and install all required Python libraries.
@@ -46,6 +46,10 @@ source .venv/bin/activate  # On Windows, use `.venv\Scripts\activate`
 pip install -r requirements.txt
 
 # Create a .env file and add your GitHub Personal Access Token
+# Windows PowerShell
+Set-Content -Path .env -Value "GITHUB_TOKEN=your_github_pat"
+
+# macOS/Linux
 echo "GITHUB_TOKEN=your_github_pat" > .env
 ```
 ### 3. Frontend Setup (Angular)
